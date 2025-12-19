@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use std::io::{self, Write, stdin};
 
 fn main() {
-    let mut commands: HashMap<String, i32> = HashMap::new();
+    let mut commands: HashMap<&str, i16> = HashMap::new();
+    commands.insert("exit", 0);
 
     let mut input_command = String::new();
 
@@ -17,11 +18,18 @@ fn main() {
             .read_line(&mut input_command)
             .expect("Failed to read line");
 
-        input_command = input_command.trim().to_string();
+        let input: &str = input_command.trim();
 
-        if (!commands.contains_key(&input_command)) {
-            print!("{}: command not found\n", input_command);
+        if (!commands.contains_key(&input)) {
+            print!("{}: command not found\n", input);
             io::stdout().flush().unwrap();
+            continue;
+        }
+
+        match commands.get(input) {
+            Some(&0) => break,
+            Some(&_) => (),
+            None => (),
         }
     }
 }
