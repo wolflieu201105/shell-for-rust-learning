@@ -2,7 +2,29 @@ use std::collections::HashMap;
 #[allow(unused_imports)]
 use std::io::{self, Write, stdin};
 
-fn echo(inputs: Vec<&str>) {
+enum Command {
+    Empty = 0,
+    Exit = 1,
+    Echo = 2,
+    Type = 3,
+}
+
+fn command_to_code(input: &str) -> Option<Command> {
+    match input {
+        "" => Some(Command::Empty),
+        "exit" => Some(Command::Exit),
+        "echo" => Some(Command::Echo),
+        "type" => Some(Command::Type),
+        _ => None,
+    }
+}
+
+fn not_command(inputs: Vec<&str>) {
+    print!("{}: command not found\n", inputs[0]);
+    io::stdout().flush().unwrap();
+}
+
+fn echo_command(inputs: Vec<&str>) {
     for arg in inputs.iter().skip(1) {
         print!("{} ", arg);
     }
@@ -10,10 +32,18 @@ fn echo(inputs: Vec<&str>) {
     io::stdout().flush().unwrap();
 }
 
+fn type_command(inputs: Vec<&str>) {
+    for arg in inputs.iter().skip(1) {
+        if command_to_code(arg).is_none() {
+            println!("{}: not found", arg);
+        } else {
+            println!("{} is a shell builtin", arg);
+        }
+    }
+    io::stdout().flush().unwrap();
+}
+
 fn main() {
-    let mut commands: HashMap<&str, i16> = HashMap::new();
-    commands.insert("exit", 0);
-    commands.insert("echo", 1);
 
     let mut input_command = String::new();
 
@@ -35,17 +65,14 @@ fn main() {
 
         let command = inputs[0];
 
-        if (!commands.contains_key(command)) {
-            print!("{}: command not found\n", command);
-            io::stdout().flush().unwrap();
-            continue;
-        }
+        let command_code = command_to_code(command);
 
-        match commands.get(command) {
-            Some(&0) => break,
-            Some(&1) => echo(inputs),
-            Some(&_) => (),
-            None => (),
+        match command_code {
+            Some(Command::Empty) => (),
+            Some(Command::Exit) => break,
+            Some(Command::Echo) => echo_command(inputs),
+            Some(Command::Type) => type_command(inputs),
+            None => not_command(inputs),
         }
     }
 }
